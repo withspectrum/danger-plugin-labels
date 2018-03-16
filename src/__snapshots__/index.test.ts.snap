@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`labels() Checkboxes should allow for an object as label configuration 1`] = `
+Array [
+  "Yes Checked was checked",
+  "Work in Progress",
+]
+`;
+
+exports[`labels() Checkboxes should be case insenitive 1`] = `
+Array [
+  "checked",
+  "wip",
+]
+`;
+
+exports[`labels() Checkboxes should call addLabels with checked labels 1`] = `
+Array [
+  "Checked",
+  "WIP",
+]
+`;
