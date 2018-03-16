@@ -32,7 +32,7 @@ schedule(labels({
 
 **Labels**
 
-Please check any labels you want to apply to this PR below. (this text will not show up in the PR)
+Please check any labels you want to apply to this PR. (this text will not show up in the PR)
 
 - [ ] WIP
 - [ ] Ready for Review
