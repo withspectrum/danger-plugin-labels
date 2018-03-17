@@ -26,18 +26,13 @@ schedule(labels({
 }))
 ```
 
-```md
+```markdown
 <!-- PULL_REQUEST_TEMPLATE.md -->
-<!-- 
 
-**Labels**
-
-Please check any labels you want to apply to this PR. (this text will not show up in the PR)
+**Status (check one)**
 
 - [ ] WIP
 - [ ] Ready for Review
-
--->
 ```
 
 Now contributors even without write access to the repo can label their PR as "WIP" and "Ready for Review"!
