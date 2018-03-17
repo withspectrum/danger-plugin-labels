@@ -3,9 +3,7 @@ import labels from "./index"
 declare const global: any
 
 const body = `
-This PR implements some changes.
-
-## Labels:
+**Some labels below**
 
 - [ ] Unchecked
 - [x] Checked
@@ -19,23 +17,6 @@ describe("labels()", () => {
     global.message = jest.fn()
     global.fail = jest.fn()
     global.markdown = jest.fn()
-    global.danger = {
-      github: {
-        thisPR: {
-          owner: "mxstbr",
-          repo: "danger-plugin-labels",
-          number: 1,
-        },
-        pr: {
-          body,
-        },
-        api: {
-          issues: {
-            addLabels: jest.fn(),
-          },
-        },
-      },
-    }
   })
 
   afterEach(() => {
@@ -43,13 +24,75 @@ describe("labels()", () => {
     global.message = undefined
     global.fail = undefined
     global.markdown = undefined
-    global.danger = undefined
   })
 
-  describe("Checkboxes", () => {
+  describe("Issue", () => {
+    beforeEach(() => {
+      global.danger = {
+        github: {
+          api: {
+            issues: {
+              addLabels: jest.fn(),
+            },
+          },
+          issue: {
+            body,
+            number: 1,
+          },
+          repository: {
+            name: "danger-plugin-labels",
+            owner: {
+              login: "mxstbr",
+            },
+          },
+        },
+      }
+    })
+
+    afterEach(() => {
+      global.danger = undefined
+    })
+
+    it("should call addLabels for issues", async () => {
+      await labels({
+        labels: ["Checked", "WIP"],
+      })
+      const { addLabels } = global.danger.github.api.issues
+
+      expect(addLabels).toHaveBeenCalledTimes(1)
+      expect(addLabels.mock.calls[0][0].owner).toEqual(global.danger.github.repository.owner.login)
+      expect(addLabels.mock.calls[0][0].repo).toEqual(global.danger.github.repository.name)
+      expect(addLabels.mock.calls[0][0].number).toEqual(global.danger.github.issue.number)
+      expect(addLabels.mock.calls[0][0].labels).toMatchSnapshot()
+    })
+  })
+
+  describe("Pull Request", () => {
+    beforeEach(() => {
+      global.danger = {
+        github: {
+          thisPR: {
+            owner: "mxstbr",
+            repo: "danger-plugin-labels",
+            number: 1,
+          },
+          pr: {
+            body,
+          },
+          api: {
+            issues: {
+              addLabels: jest.fn(),
+            },
+          },
+        },
+      }
+    })
+    afterEach(() => {
+      global.danger = undefined
+    })
     it("should call addLabels with checked labels", async () => {
       await labels({
-        labels: ["Checked", "WIP"]
+        labels: ["Checked", "WIP"],
       })
       const { addLabels } = global.danger.github.api.issues
 
@@ -62,7 +105,7 @@ describe("labels()", () => {
 
     it("should be case insenitive", async () => {
       await labels({
-        labels: ["checked", "wip"]
+        labels: ["checked", "wip"],
       })
       const { addLabels } = global.danger.github.api.issues
 
@@ -74,8 +117,8 @@ describe("labels()", () => {
       await labels({
         labels: {
           checked: "Yes Checked was checked",
-          wip: "Work in Progress"
-        }
+          wip: "Work in Progress",
+        },
       })
       const { addLabels } = global.danger.github.api.issues
 
