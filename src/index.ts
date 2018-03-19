@@ -1,6 +1,5 @@
 // Provides dev-time type structures for  `danger` - doesn't affect runtime.
 import { DangerDSLType } from "danger/distribution/dsl/DangerDSL"
-import { Issues } from "github-webhook-event-types"
 declare var danger: DangerDSLType
 export declare function message(message: string): void
 export declare function warn(message: string): void
@@ -81,7 +80,7 @@ export default async function labelsPlugin(options: Options) {
     issue = { number: pr.number, repo: pr.repo, owner: pr.owner }
     // Issue
   } else {
-    const gh = (danger.github as any) as Issues
+    const gh = danger.github as any
     text = gh.issue.body
     issue = { number: gh.issue.number, repo: gh.repository.name, owner: gh.repository.owner.login }
   }
