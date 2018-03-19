@@ -4,7 +4,7 @@
 [![npm version](https://badge.fury.io/js/danger-plugin-labels.svg)](https://badge.fury.io/js/danger-plugin-labels)
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
-> Let any contributor (even without write permissions) add labels to their pull requests
+> Let any contributor add labels to their pull requests and issues
 
 ## Usage
 
@@ -36,6 +36,8 @@ schedule(labels({
 ```
 
 Now contributors even without write access to the repo can label their PR as "WIP" and "Ready for Review"!
+
+> Note: There is experimental issue support if you're using [Peril](https://github.com/danger/peril) and point the `issue` event hook to your Dangerfile. No guarantees it won't break though!
 
 ### Options
 

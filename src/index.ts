@@ -15,7 +15,8 @@ export interface Options {
   labels: StringMap | string[]
 }
 
-const CHECKBOXES = /^\s*-\s*\[x\]\s*(.+?)$/gim
+const CHECKBOXES = /^[\t ]*-[\t ]*\[x\][\t ]*(.+?)$/gim
+const UNCHECKEDBOXES = /^[\t ]*-[\t ]*\[[\t ]*\][\t ]*(.+?)$/gim
 
 const getCheckedBoxes = (text: string): string[] => {
   // Full Text => ["- [x] Checked", "- [x] Also Checked"]
@@ -28,6 +29,21 @@ const getCheckedBoxes = (text: string): string[] => {
   // "- [x] Checked" => "Checked"
   return rawMatches
     .map(result => new RegExp(CHECKBOXES.source, "mi").exec(result))
+    .filter(Boolean)
+    .map(res => res && res[1]) as string[]
+}
+
+const getUncheckedBoxes = (text: string): string[] => {
+  // Full Text => ["- [ ] Unchecked", "- [  ] Also Unchecked"]
+  const rawMatches = text.match(UNCHECKEDBOXES)
+  if (!rawMatches || rawMatches.length === 0) {
+    return []
+  }
+
+  // Extract checked text from markdown checkbox
+  // "- [ ] Unchecked" => "Unchecked"
+  return rawMatches
+    .map(result => new RegExp(UNCHECKEDBOXES.source, "mi").exec(result))
     .filter(Boolean)
     .map(res => res && res[1]) as string[]
 }
@@ -73,12 +89,25 @@ export default async function labelsPlugin(options: Options) {
     .filter(match => Object.keys(labels).indexOf(match.toLowerCase()) > -1)
     .map(key => labels[key.toLowerCase()])
 
-  if (!matchingLabels || matchingLabels.length === 0) {
+  const uncheckedLabels = getUncheckedBoxes(text)
+    .filter(match => Object.keys(labels).indexOf(match.toLowerCase()) > -1)
+    .map(key => labels[key.toLowerCase()])
+
+  if (matchingLabels.length === 0 && uncheckedLabels.length === 0) {
     return
   }
 
-  await api.issues.addLabels({
+  const existingLabels = (await api.issues.getIssueLabels({
     ...issue,
-    labels: matchingLabels,
+  })).data.map(({ name }) => name)
+
+  const replacementLabels = [
+    ...matchingLabels,
+    ...existingLabels.filter(label => uncheckedLabels.indexOf(label) === -1),
+  ].filter((item, pos, ar) => ar.indexOf(item) === pos)
+
+  await api.issues.replaceAllLabels({
+    ...issue,
+    labels: replacementLabels,
   })
 }
