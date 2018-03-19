@@ -72,6 +72,7 @@ export default async function labelsPlugin(options: Options) {
 
   const api = danger.github.api
   let issue = { number: 0, repo: "", owner: "" }
+  const existingLabels = danger.github.issue.labels.map(({ name }) => name)
   let text = ""
   // PR
   if (danger.github.thisPR) {
@@ -96,10 +97,6 @@ export default async function labelsPlugin(options: Options) {
   if (matchingLabels.length === 0 && uncheckedLabels.length === 0) {
     return
   }
-
-  const existingLabels = (await api.issues.getIssueLabels({
-    ...issue,
-  })).data.map(({ name }) => name)
 
   const replacementLabels = [
     ...matchingLabels,

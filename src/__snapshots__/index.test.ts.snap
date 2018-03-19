@@ -36,4 +36,8 @@ Array [
 ]
 `;
 
-exports[`labels() Pull Request should call replaceAllLabels without unchecked labels 1`] = `Array []`;
+exports[`labels() Pull Request should call replaceAllLabels without unchecked labels 1`] = `
+Array [
+  "Existing",
+]
+`;

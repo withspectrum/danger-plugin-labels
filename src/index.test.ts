@@ -12,17 +12,13 @@ const body = `
 `
 
 const getIssueLabels = (extraLabels: string[] = []) =>
-  jest.fn(() =>
-    Promise.resolve({
-      data: extraLabels.map(name => ({
-        id: 123,
-        url: "https://github.com",
-        name,
-        color: "000000",
-        default: false,
-      })),
-    })
-  )
+  extraLabels.map(name => ({
+    id: 123,
+    url: "https://github.com",
+    name,
+    color: "000000",
+    default: false,
+  }))
 
 describe("labels()", () => {
   beforeEach(() => {
@@ -46,12 +42,12 @@ describe("labels()", () => {
           api: {
             issues: {
               replaceAllLabels: jest.fn(),
-              getIssueLabels: getIssueLabels(),
             },
           },
           issue: {
             body,
             number: 1,
+            labels: getIssueLabels(),
           },
           repository: {
             name: "danger-plugin-labels",
@@ -90,13 +86,15 @@ describe("labels()", () => {
             repo: "danger-plugin-labels",
             number: 1,
           },
+          issue: {
+            labels: getIssueLabels(),
+          },
           pr: {
             body,
           },
           api: {
             issues: {
               replaceAllLabels: jest.fn(),
-              getIssueLabels: getIssueLabels(),
             },
           },
         },
@@ -149,7 +147,7 @@ describe("labels()", () => {
     })
 
     it("should not call replaceAllLabels, even if there are existing labels", async () => {
-      global.danger.github.api.issues.getIssueLabels = getIssueLabels(["Existing"])
+      global.danger.github.issue.labels = getIssueLabels(["Existing"])
       global.danger.github.pr.body = "Just some text without any labels"
       await labels({ labels: ["checked"] })
 
@@ -157,7 +155,7 @@ describe("labels()", () => {
     })
 
     it("should call replaceAllLabels with checked and existing labels", async () => {
-      global.danger.github.api.issues.getIssueLabels = getIssueLabels(["Existing"])
+      global.danger.github.issue.labels = getIssueLabels(["Existing"])
       await labels({
         labels: ["Checked", "WIP"],
       })
@@ -172,7 +170,7 @@ describe("labels()", () => {
 
     it("should call replaceAllLabels without unchecked labels", async () => {
       global.danger.github.pr.body = "- [ ] Unchecked"
-      global.danger.github.api.issues.getIssueLabels = getIssueLabels(["Unchecked"])
+      global.danger.github.issue.labels = getIssueLabels(["Existing"])
       await labels({ labels: ["Unchecked"] })
 
       const { replaceAllLabels } = global.danger.github.api.issues
