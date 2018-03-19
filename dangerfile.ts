@@ -4,7 +4,8 @@ import labels from "./src"
 schedule(
   labels({
     labels: {
-      WIP: "WIP: Building",
+      enhancement: "enhancement",
+      "bug fix": "bug",
     },
   })
 )
