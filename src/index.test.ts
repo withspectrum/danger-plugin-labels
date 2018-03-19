@@ -11,6 +11,19 @@ const body = `
 - [x] WIP
 `
 
+const getIssueLabels = (extraLabels: string[] = []) =>
+  jest.fn(() =>
+    Promise.resolve({
+      data: extraLabels.map(name => ({
+        id: 123,
+        url: "https://github.com",
+        name,
+        color: "000000",
+        default: false,
+      })),
+    })
+  )
+
 describe("labels()", () => {
   beforeEach(() => {
     global.warn = jest.fn()
@@ -32,7 +45,8 @@ describe("labels()", () => {
         github: {
           api: {
             issues: {
-              addLabels: jest.fn(),
+              replaceAllLabels: jest.fn(),
+              getIssueLabels: getIssueLabels(),
             },
           },
           issue: {
@@ -53,17 +67,17 @@ describe("labels()", () => {
       global.danger = undefined
     })
 
-    it("should call addLabels for issues", async () => {
+    it("should call replaceAllLabels for issues", async () => {
       await labels({
         labels: ["Checked", "WIP"],
       })
-      const { addLabels } = global.danger.github.api.issues
+      const { replaceAllLabels } = global.danger.github.api.issues
 
-      expect(addLabels).toHaveBeenCalledTimes(1)
-      expect(addLabels.mock.calls[0][0].owner).toEqual(global.danger.github.repository.owner.login)
-      expect(addLabels.mock.calls[0][0].repo).toEqual(global.danger.github.repository.name)
-      expect(addLabels.mock.calls[0][0].number).toEqual(global.danger.github.issue.number)
-      expect(addLabels.mock.calls[0][0].labels).toMatchSnapshot()
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].owner).toEqual(global.danger.github.repository.owner.login)
+      expect(replaceAllLabels.mock.calls[0][0].repo).toEqual(global.danger.github.repository.name)
+      expect(replaceAllLabels.mock.calls[0][0].number).toEqual(global.danger.github.issue.number)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
     })
   })
 
@@ -81,7 +95,8 @@ describe("labels()", () => {
           },
           api: {
             issues: {
-              addLabels: jest.fn(),
+              replaceAllLabels: jest.fn(),
+              getIssueLabels: getIssueLabels(),
             },
           },
         },
@@ -90,27 +105,27 @@ describe("labels()", () => {
     afterEach(() => {
       global.danger = undefined
     })
-    it("should call addLabels with checked labels", async () => {
+    it("should call replaceAllLabels with checked labels", async () => {
       await labels({
         labels: ["Checked", "WIP"],
       })
-      const { addLabels } = global.danger.github.api.issues
+      const { replaceAllLabels } = global.danger.github.api.issues
 
-      expect(addLabels).toHaveBeenCalledTimes(1)
-      expect(addLabels.mock.calls[0][0].owner).toEqual(global.danger.github.thisPR.owner)
-      expect(addLabels.mock.calls[0][0].repo).toEqual(global.danger.github.thisPR.repo)
-      expect(addLabels.mock.calls[0][0].number).toEqual(global.danger.github.thisPR.number)
-      expect(addLabels.mock.calls[0][0].labels).toMatchSnapshot()
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].owner).toEqual(global.danger.github.thisPR.owner)
+      expect(replaceAllLabels.mock.calls[0][0].repo).toEqual(global.danger.github.thisPR.repo)
+      expect(replaceAllLabels.mock.calls[0][0].number).toEqual(global.danger.github.thisPR.number)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
     })
 
     it("should be case insenitive", async () => {
       await labels({
         labels: ["checked", "wip"],
       })
-      const { addLabels } = global.danger.github.api.issues
+      const { replaceAllLabels } = global.danger.github.api.issues
 
-      expect(addLabels).toHaveBeenCalledTimes(1)
-      expect(addLabels.mock.calls[0][0].labels).toMatchSnapshot()
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
     })
 
     it("should allow for an object as label configuration", async () => {
@@ -120,17 +135,49 @@ describe("labels()", () => {
           wip: "Work in Progress",
         },
       })
-      const { addLabels } = global.danger.github.api.issues
+      const { replaceAllLabels } = global.danger.github.api.issues
 
-      expect(addLabels).toHaveBeenCalledTimes(1)
-      expect(addLabels.mock.calls[0][0].labels).toMatchSnapshot()
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
     })
 
-    it("should not call addLabels if there is nothing in the PR body", async () => {
+    it("should not call replaceAllLabels if there is nothing in the PR body", async () => {
       global.danger.github.pr.body = "Just some text without any labels"
       await labels({ labels: ["checked"] })
 
-      expect(global.danger.github.api.issues.addLabels).not.toHaveBeenCalled()
+      expect(global.danger.github.api.issues.replaceAllLabels).not.toHaveBeenCalled()
+    })
+
+    it("should not call replaceAllLabels, even if there are existing labels", async () => {
+      global.danger.github.api.issues.getIssueLabels = getIssueLabels(["Existing"])
+      global.danger.github.pr.body = "Just some text without any labels"
+      await labels({ labels: ["checked"] })
+
+      expect(global.danger.github.api.issues.replaceAllLabels).not.toHaveBeenCalled()
+    })
+
+    it("should call replaceAllLabels with checked and existing labels", async () => {
+      global.danger.github.api.issues.getIssueLabels = getIssueLabels(["Existing"])
+      await labels({
+        labels: ["Checked", "WIP"],
+      })
+      const { replaceAllLabels } = global.danger.github.api.issues
+
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].owner).toEqual(global.danger.github.thisPR.owner)
+      expect(replaceAllLabels.mock.calls[0][0].repo).toEqual(global.danger.github.thisPR.repo)
+      expect(replaceAllLabels.mock.calls[0][0].number).toEqual(global.danger.github.thisPR.number)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
+    })
+
+    it("should call replaceAllLabels without unchecked labels", async () => {
+      global.danger.github.pr.body = "- [ ] Unchecked"
+      global.danger.github.api.issues.getIssueLabels = getIssueLabels(["Unchecked"])
+      await labels({ labels: ["Unchecked"] })
+
+      const { replaceAllLabels } = global.danger.github.api.issues
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
     })
   })
 })
