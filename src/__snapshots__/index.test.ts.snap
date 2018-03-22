@@ -7,10 +7,9 @@ Array [
 ]
 `;
 
-exports[`labels() Pull Request should allow for an object as label configuration 1`] = `
+exports[`labels() Pull Request should allow for a customizable rule config 1`] = `
 Array [
-  "Yes Checked was checked",
-  "Work in Progress",
+  "Something different",
 ]
 `;
 
