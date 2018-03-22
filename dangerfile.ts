@@ -3,9 +3,12 @@ import labels from "./src"
 
 schedule(
   labels({
-    labels: {
-      enhancement: "enhancement",
-      "bug fix": "bug",
-    },
+    rules: [
+      "Enhancement",
+      {
+        match: /bug fix/i,
+        label: "bug",
+      },
+    ],
   })
 )

@@ -65,7 +65,7 @@ describe("labels()", () => {
 
     it("should call replaceAllLabels for issues", async () => {
       await labels({
-        labels: ["Checked", "WIP"],
+        rules: ["Checked", "WIP"],
       })
       const { replaceAllLabels } = global.danger.github.api.issues
 
@@ -105,7 +105,7 @@ describe("labels()", () => {
     })
     it("should call replaceAllLabels with checked labels", async () => {
       await labels({
-        labels: ["Checked", "WIP"],
+        rules: ["Checked", "WIP"],
       })
       const { replaceAllLabels } = global.danger.github.api.issues
 
@@ -118,7 +118,7 @@ describe("labels()", () => {
 
     it("should be case insenitive", async () => {
       await labels({
-        labels: ["checked", "wip"],
+        rules: ["checked", "wip"],
       })
       const { replaceAllLabels } = global.danger.github.api.issues
 
@@ -126,12 +126,14 @@ describe("labels()", () => {
       expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
     })
 
-    it("should allow for an object as label configuration", async () => {
+    it("should allow for a customizable rule config", async () => {
       await labels({
-        labels: {
-          checked: "Yes Checked was checked",
-          wip: "Work in Progress",
-        },
+        rules: [
+          {
+            match: /checked/i,
+            label: "Something different",
+          },
+        ],
       })
       const { replaceAllLabels } = global.danger.github.api.issues
 
@@ -141,7 +143,7 @@ describe("labels()", () => {
 
     it("should not call replaceAllLabels if there is nothing in the PR body", async () => {
       global.danger.github.pr.body = "Just some text without any labels"
-      await labels({ labels: ["checked"] })
+      await labels({ rules: ["checked"] })
 
       expect(global.danger.github.api.issues.replaceAllLabels).not.toHaveBeenCalled()
     })
@@ -149,7 +151,7 @@ describe("labels()", () => {
     it("should not call replaceAllLabels, even if there are existing labels", async () => {
       global.danger.github.issue.labels = getIssueLabels(["Existing"])
       global.danger.github.pr.body = "Just some text without any labels"
-      await labels({ labels: ["checked"] })
+      await labels({ rules: ["checked"] })
 
       expect(global.danger.github.api.issues.replaceAllLabels).not.toHaveBeenCalled()
     })
@@ -157,7 +159,7 @@ describe("labels()", () => {
     it("should call replaceAllLabels with checked and existing labels", async () => {
       global.danger.github.issue.labels = getIssueLabels(["Existing"])
       await labels({
-        labels: ["Checked", "WIP"],
+        rules: ["Checked", "WIP"],
       })
       const { replaceAllLabels } = global.danger.github.api.issues
 
@@ -171,7 +173,7 @@ describe("labels()", () => {
     it("should call replaceAllLabels without unchecked labels", async () => {
       global.danger.github.pr.body = "- [ ] Unchecked"
       global.danger.github.issue.labels = getIssueLabels(["Existing"])
-      await labels({ labels: ["Unchecked"] })
+      await labels({ rules: ["Unchecked"] })
 
       const { replaceAllLabels } = global.danger.github.api.issues
       expect(replaceAllLabels).toHaveBeenCalledTimes(1)

@@ -10,8 +10,15 @@ export interface StringMap {
   [key: string]: string
 }
 
+export interface Rule {
+  match: RegExp
+  label: string
+}
+
+export type RuleInput = string | Rule
+
 export interface Options {
-  labels: StringMap | string[]
+  rules: RuleInput[]
 }
 
 const CHECKBOXES = /^[\t ]*-[\t ]*\[x\][\t ]*(.+?)$/gim
@@ -51,23 +58,21 @@ const getUncheckedBoxes = (text: string): string[] => {
  * Let any user add a certain set of labels to your issues and pull requests
  */
 export default async function labelsPlugin(options: Options) {
-  if (!options || !options.labels) {
-    throw new Error('[danger-plugin-labels] Please specify the "labels" option.')
+  if (!options || !options.rules) {
+    throw new Error('[danger-plugin-labels] Please specify the "rules" option.')
   }
-  let { labels } = options
+  const { rules: input } = options
 
-  if (Array.isArray(labels)) {
-    labels = labels.reduce((obj, label) => {
-      obj[label] = label
-      return obj
-    }, {}) as StringMap
-  }
+  const rules = input.map(rule => {
+    if (typeof rule !== "string") {
+      return rule
+    }
 
-  // Lowercase all label keys
-  labels = Object.keys(labels).reduce((obj, key) => {
-    obj[key.toLowerCase()] = labels[key]
-    return obj
-  }, {}) as StringMap
+    return {
+      match: new RegExp(rule, "i"),
+      label: rule,
+    }
+  }) as Rule[]
 
   const api = danger.github.api
   let issue = { number: 0, repo: "", owner: "" }
@@ -86,12 +91,22 @@ export default async function labelsPlugin(options: Options) {
   }
 
   const matchingLabels = getCheckedBoxes(text)
-    .filter(match => Object.keys(labels).indexOf(match.toLowerCase()) > -1)
-    .map(key => labels[key.toLowerCase()])
+    .map(label => {
+      const rule = rules.find(r => r.match.test(label))
+      if (!rule) {
+        return null
+      }
+      return rule.label
+    })
+    .filter(Boolean)
 
-  const uncheckedLabels = getUncheckedBoxes(text)
-    .filter(match => Object.keys(labels).indexOf(match.toLowerCase()) > -1)
-    .map(key => labels[key.toLowerCase()])
+  const uncheckedLabels = getUncheckedBoxes(text).reduce((labels, label) => {
+    const rule = rules.find(r => r.match.test(label))
+    if (!rule) {
+      return labels
+    }
+    return [...labels, label]
+  }, [])
 
   if (matchingLabels.length === 0 && uncheckedLabels.length === 0) {
     return
@@ -100,7 +115,7 @@ export default async function labelsPlugin(options: Options) {
   const replacementLabels = [
     ...matchingLabels,
     ...existingLabels.filter(label => uncheckedLabels.indexOf(label) === -1),
-  ].filter((item, pos, ar) => ar.indexOf(item) === pos)
+  ].filter((item, pos, ar) => ar.indexOf(item) === pos) as string[]
 
   await api.issues.replaceAllLabels({
     ...issue,

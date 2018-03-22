@@ -22,7 +22,10 @@ import { schedule } from 'danger'
 import labels from 'danger-plugin-labels'
 
 schedule(labels({
-  label: ["WIP", "Ready for Review"]
+  rules: [
+    { match: /WIP/i, label: 'Work In Progress' },
+    'Ready for Review'
+  ]
 }))
 ```
 
@@ -35,27 +38,30 @@ schedule(labels({
 - [ ] Ready for Review
 ```
 
-Now contributors even without write access to the repo can label their PR as "WIP" and "Ready for Review"!
+Now contributors even without write access to the repo can label their PR as "Work In Progress" and "Ready for Review"!
 
 > Note: There is experimental issue support if you're using [Peril](https://github.com/danger/peril) and point the `issue` event hook to your Dangerfile. No guarantees it won't break though!
 
 ### Options
 
-#### `labels` (required)
+#### `rules` (required)
 
-The labels option lets you specify a whitelist of labels to apply. This can be either a map or an array:
+The labels option lets you specify a whitelist of labels to apply.
 
 ```js
 schedule(labels({
-  // A checked box with "WIP" will apply the "WIP" label
-  labels: ["WIP"]
+  // A checked box with "WIP" will apply the "Work In Progress" label
+  rules: [{
+    match: /WIP/i,
+    label: "Work In Progress"
+  }]
 }))
 
+// There's also a shorthand:
+
 schedule(labels({
-  // A checked box with "WIP" will apply the "Work In Progress" label
-  labels: {
-    WIP: 'Work In Progress'
-  }
+  // A checked box with "WIP" will apply the "WIP" label
+  labels: ["WIP"]
 }))
 ```
 
