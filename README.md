@@ -24,7 +24,7 @@ import labels from 'danger-plugin-labels'
 schedule(labels({
   rules: [
     { match: /WIP/i, label: 'Work In Progress' },
-    'Ready for Review'
+    { match: /Ready for Review/i, label: 'Ready for Review' }
   ]
 }))
 ```
@@ -46,7 +46,7 @@ Now contributors even without write access to the repo can label their PR as "Wo
 
 #### `rules` (required)
 
-The labels option lets you specify a whitelist of labels to apply.
+Rules lets you specify which labels to apply depending on which checkboxes are ticked:
 
 ```js
 schedule(labels({
@@ -56,16 +56,18 @@ schedule(labels({
     label: "Work In Progress"
   }]
 }))
+```
 
-// There's also a shorthand:
+Because it's tedious to repeat the same string twice if the label matches the checkbox, you can also provide the shorthand notation:
 
+```
 schedule(labels({
   // A checked box with "WIP" will apply the "WIP" label
   labels: ["WIP"]
 }))
 ```
 
-Note that the keys are case insensitive (`wip`, `Wip` and `WIP` in the markdown would all apply the label), but the label content isn't.
+> Note: The checkbox text in this case is case insensitive (`wip`, `Wip` and `WIP` in the markdown would all apply the label), but the label content isn't. (GitHub treats "WIP" as a separate label than "wip", make sure to match the text exactly!)
 
 ## Changelog
 
