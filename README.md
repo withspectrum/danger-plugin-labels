@@ -59,7 +59,7 @@ schedule(labels({
 
 Because it's tedious to repeat the same string twice if the label matches the checkbox, you can also provide the shorthand notation:
 
-```
+```js
 schedule(labels({
   // A checked box with "WIP" will apply the "WIP" label
   rules: ["WIP"]
@@ -73,7 +73,7 @@ schedule(labels({
 A function that's called with all the matching labels, allowing you to accept or reject them by returnng `true` or `false`, respectively. This is useful for a number of things, for example to limit the maximum number of labels selected:
 
 
-```
+```js
 import { fail } from 'danger';
 
 schedule(labels({
@@ -91,7 +91,7 @@ schedule(labels({
 
 This method can also be asynchronous so you can do all sorts of cool stuff, like close issues that users want to label as questions:
 
-```
+```js
 import { fail } from 'danger';
 
 schedule(labels({
