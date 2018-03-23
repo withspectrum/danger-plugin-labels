@@ -113,7 +113,7 @@ export default async function labelsPlugin(options: Options) {
     return
   }
 
-  if (validate && !await validate(matchingLabels)) {
+  if (validate && (await validate(matchingLabels)) === false) {
     return
   }
 

@@ -193,6 +193,19 @@ describe("labels()", () => {
       expect(replaceAllLabels).toHaveBeenCalledTimes(1)
     })
 
+    it("should treat no return from validate as true", async () => {
+      expect.assertions(2)
+      const errorLabels: any = labels as any
+      await errorLabels({
+        rules: ["Checked", "WIP"],
+        validate: labelList => {
+          expect(labelList).toEqual(["Checked", "WIP"])
+        },
+      })
+      const { replaceAllLabels } = global.danger.github.api.issues
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+    })
+
     it("should not call replaceAllLabels if validate returns false", async () => {
       expect.assertions(2)
       await labels({
