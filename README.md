@@ -63,11 +63,50 @@ Because it's tedious to repeat the same string twice if the label matches the ch
 ```
 schedule(labels({
   // A checked box with "WIP" will apply the "WIP" label
-  labels: ["WIP"]
+  rules: ["WIP"]
 }))
 ```
 
 > Note: The checkbox text in this case is case insensitive (`wip`, `Wip` and `WIP` in the markdown would all apply the label), but the label content isn't. (GitHub treats "WIP" as a separate label than "wip", make sure to match the text exactly!)
+
+#### `validate`
+
+A function that's called with all the matching labels, allowing you to accept or reject them by returnng `true` or `false`, respectively. This is useful for a number of things, for example to limit the maximum number of labels selected:
+
+
+```
+import { fail } from 'danger';
+
+schedule(labels({
+  rules: [/* ... */],
+  validate: (labels) => {
+    if (labels.length < 1 || labels.length > 3) {
+      fail('Please specify at least one and at most 3 labels.');
+      return false;
+    }
+
+    return true;
+  }
+}))
+```
+
+This method can also be asynchronous so you can do all sorts of cool stuff, like close issues that users want to label as questions:
+
+```
+import { fail } from 'danger';
+
+schedule(labels({
+  rules: [/* ... */],
+  validate: async (labels) => {
+    if (labels.includes('Question')) {
+      fail('Please direct questions to the community on Spectrum.')
+      await closeIssue();
+      return false;
+    }
+    return true;
+  }
+}))
+```
 
 ## Changelog
 
