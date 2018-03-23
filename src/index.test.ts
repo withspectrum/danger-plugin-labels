@@ -179,5 +179,45 @@ describe("labels()", () => {
       expect(replaceAllLabels).toHaveBeenCalledTimes(1)
       expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
     })
+
+    it("should call validate with the matching labels", async () => {
+      expect.assertions(2)
+      await labels({
+        rules: ["Checked", "WIP"],
+        validate: labelList => {
+          expect(labelList).toEqual(["Checked", "WIP"])
+          return true
+        },
+      })
+      const { replaceAllLabels } = global.danger.github.api.issues
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+    })
+
+    it("should not call replaceAllLabels if validate returns false", async () => {
+      expect.assertions(2)
+      await labels({
+        rules: ["Checked", "WIP"],
+        validate: labelList => {
+          expect(labelList).toEqual(["Checked", "WIP"])
+          return false
+        },
+      })
+      const { replaceAllLabels } = global.danger.github.api.issues
+      expect(replaceAllLabels).not.toHaveBeenCalled()
+    })
+
+    it("should allow validate to be async", async () => {
+      expect.assertions(2)
+      await labels({
+        rules: ["Checked", "WIP"],
+        validate: async labelList => {
+          expect(labelList).toEqual(["Checked", "WIP"])
+          await new Promise(res => setTimeout(res, 100))
+          return false
+        },
+      })
+      const { replaceAllLabels } = global.danger.github.api.issues
+      expect(replaceAllLabels).not.toHaveBeenCalled()
+    })
   })
 })

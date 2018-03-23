@@ -19,6 +19,7 @@ export type RuleInput = string | Rule
 
 export interface Options {
   rules: RuleInput[]
+  validate?: (labels: string[]) => Promise<boolean> | boolean
 }
 
 const CHECKBOXES = /^[\t ]*-[\t ]*\[x\][\t ]*(.+?)$/gim
@@ -61,7 +62,7 @@ export default async function labelsPlugin(options: Options) {
   if (!options || !options.rules) {
     throw new Error('[danger-plugin-labels] Please specify the "rules" option.')
   }
-  const { rules: input } = options
+  const { rules: input, validate } = options
 
   const rules = input.map(rule => {
     if (typeof rule !== "string") {
@@ -98,7 +99,7 @@ export default async function labelsPlugin(options: Options) {
       }
       return rule.label
     })
-    .filter(Boolean)
+    .filter(Boolean) as string[]
 
   const uncheckedLabels = getUncheckedBoxes(text).reduce((labels, label) => {
     const rule = rules.find(r => r.match.test(label))
@@ -109,6 +110,10 @@ export default async function labelsPlugin(options: Options) {
   }, [])
 
   if (matchingLabels.length === 0 && uncheckedLabels.length === 0) {
+    return
+  }
+
+  if (validate && !await validate(matchingLabels)) {
     return
   }
 
