@@ -40,3 +40,5 @@ Array [
   "Existing",
 ]
 `;
+
+exports[`labels() Pull Request should call replaceAllLabels without unchecked labels even if they were previously checked 1`] = `Array []`;

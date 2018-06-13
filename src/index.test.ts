@@ -180,6 +180,36 @@ describe("labels()", () => {
       expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
     })
 
+    it("should call replaceAllLabels without unchecked labels even if they were previously checked", async () => {
+      global.danger.github.pr.body = "- [ ] Unchecked"
+      global.danger.github.issue.labels = getIssueLabels(["Unchecked"])
+      await labels({ rules: ["Unchecked"] })
+
+      const { replaceAllLabels } = global.danger.github.api.issues
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toMatchSnapshot()
+    })
+
+    it("should call replaceAllLabels without previous checked labels and unchecked labels", async () => {
+      global.danger.github.pr.body = "- [ ] Unchecked\n- [  ] New"
+      global.danger.github.issue.labels = getIssueLabels(["Unchecked"])
+      await labels({ rules: ["Unchecked", "New"] })
+
+      const { replaceAllLabels } = global.danger.github.api.issues
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toEqual([])
+    })
+
+    it("should call replaceAllLabels with newly checked labels and without previous checked labels", async () => {
+      global.danger.github.pr.body = "- [ ] Unchecked\n- [x] New"
+      global.danger.github.issue.labels = getIssueLabels(["Unchecked"])
+      await labels({ rules: ["Unchecked", "New"] })
+
+      const { replaceAllLabels } = global.danger.github.api.issues
+      expect(replaceAllLabels).toHaveBeenCalledTimes(1)
+      expect(replaceAllLabels.mock.calls[0][0].labels).toEqual(["New"])
+    })
+
     it("should call validate with the matching labels", async () => {
       expect.assertions(2)
       await labels({
