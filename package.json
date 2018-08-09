@@ -80,6 +80,6 @@
     ]
   },
   "dependencies": {
-    "github-webhook-event-types": "^1.0.0"
+    "github-webhook-event-types": "^1.1.0"
   }
 }
