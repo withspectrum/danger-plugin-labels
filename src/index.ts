@@ -76,19 +76,19 @@ export default async function labelsPlugin(options: Options) {
   }) as Rule[]
 
   const api = danger.github.api
-  let issue = { number: 0, repo: "", owner: "" }
+  let issue = { issue_number: 0, repo: "", owner: "" }
   const existingLabels = danger.github.issue.labels.map(({ name }) => name)
   let text = ""
   // PR
   if (danger.github.thisPR) {
     const pr = danger.github.thisPR
     text = danger.github.pr.body
-    issue = { number: pr.number, repo: pr.repo, owner: pr.owner }
+    issue = { issue_number: pr.number, repo: pr.repo, owner: pr.owner }
     // Issue
   } else {
     const gh = danger.github as any
     text = gh.issue.body
-    issue = { number: gh.issue.number, repo: gh.repository.name, owner: gh.repository.owner.login }
+    issue = { issue_number: gh.issue.number, repo: gh.repository.name, owner: gh.repository.owner.login }
   }
 
   const matchingLabels = getCheckedBoxes(text)
@@ -122,7 +122,7 @@ export default async function labelsPlugin(options: Options) {
     ...existingLabels.filter(label => uncheckedLabels.indexOf(label) === -1),
   ].filter((item, pos, ar) => ar.indexOf(item) === pos) as string[]
 
-  await api.issues.replaceAllLabels({
+  await api.issues.replaceLabels({
     ...issue,
     labels: replacementLabels,
   })
