@@ -1496,9 +1496,9 @@ github-url-from-username-repo@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/github-url-from-username-repo/-/github-url-from-username-repo-1.0.2.tgz#7dd79330d2abe69c10c2cef79714c97215791dfa"
 
-github-webhook-event-types@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/github-webhook-event-types/-/github-webhook-event-types-1.1.0.tgz#78364b46acefd56309ee72546e9ac7573949a2af"
+github-webhook-event-types@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/github-webhook-event-types/-/github-webhook-event-types-1.2.1.tgz#3427ec2d7625457ef9c1bac5e929cb59b63bd667"
 
 github@^8.0.0:
   version "8.2.1"
